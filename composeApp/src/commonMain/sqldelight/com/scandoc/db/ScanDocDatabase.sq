@@ -1,0 +1,57 @@
+CREATE TABLE IF NOT EXISTS Document (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    createdAt INTEGER NOT NULL,
+    updatedAt INTEGER NOT NULL,
+    pageCount INTEGER NOT NULL DEFAULT 0,
+    thumbnailPath TEXT,
+    tags TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE IF NOT EXISTS Page (
+    id TEXT NOT NULL PRIMARY KEY,
+    documentId TEXT NOT NULL,
+    orderIndex INTEGER NOT NULL,
+    imagePath TEXT NOT NULL,
+    ocrText TEXT,
+    ocrConfidence REAL,
+    width INTEGER NOT NULL,
+    height INTEGER NOT NULL,
+    FOREIGN KEY (documentId) REFERENCES Document(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_page_document ON Page(documentId);
+CREATE INDEX IF NOT EXISTS idx_doc_updated ON Document(updatedAt DESC);
+
+selectAllDocuments:
+SELECT * FROM Document ORDER BY updatedAt DESC;
+
+selectDocumentById:
+SELECT * FROM Document WHERE id = ?;
+
+selectPagesForDocument:
+SELECT * FROM Page WHERE documentId = ? ORDER BY orderIndex;
+
+searchByOcrText:
+SELECT DISTINCT d.* FROM Document d
+INNER JOIN Page p ON p.documentId = d.id
+WHERE p.ocrText LIKE '%' || :query || '%'
+ORDER BY d.updatedAt DESC;
+
+insertDocument:
+INSERT INTO Document(id, name, createdAt, updatedAt, pageCount, thumbnailPath, tags)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+updateDocument:
+UPDATE Document SET name = ?, updatedAt = ?, pageCount = ?, thumbnailPath = ?, tags = ?
+WHERE id = ?;
+
+insertPage:
+INSERT INTO Page(id, documentId, orderIndex, imagePath, ocrText, ocrConfidence, width, height)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+deleteDocument:
+DELETE FROM Document WHERE id = ?;
+
+deletePagesByDocument:
+DELETE FROM Page WHERE documentId = ?;

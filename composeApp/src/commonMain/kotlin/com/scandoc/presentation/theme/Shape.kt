@@ -1,0 +1,20 @@
+package com.scandoc.presentation.theme
+
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Shapes
+import androidx.compose.ui.unit.dp
+
+fun scanDocShapes(): Shapes = Shapes(
+    extraSmall = RoundedCornerShape(4.dp),
+    small = RoundedCornerShape(8.dp),
+    medium = RoundedCornerShape(14.dp),
+    large = RoundedCornerShape(22.dp),
+    extraLarge = RoundedCornerShape(32.dp),
+)
+
+object ScanDocShapes {
+    val Small = RoundedCornerShape(8.dp)
+    val Medium = RoundedCornerShape(14.dp)
+    val Large = RoundedCornerShape(22.dp)
+    val Pill = RoundedCornerShape(100.dp)
+}
