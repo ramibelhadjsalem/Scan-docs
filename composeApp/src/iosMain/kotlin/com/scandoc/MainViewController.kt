@@ -1,12 +1,19 @@
 package com.scandoc
 
 import androidx.compose.ui.window.ComposeUIViewController
-import com.scandoc.core.di.appModule
-import org.koin.core.context.startKoin
+import com.arkivanov.decompose.DefaultComponentContext
+import com.arkivanov.essenty.lifecycle.LifecycleRegistry
+import com.arkivanov.essenty.lifecycle.resume
+import com.scandoc.presentation.navigation.DefaultRootComponent
+import platform.UIKit.UIViewController
 
-fun MainViewController() = ComposeUIViewController {
-    startKoin {
-        modules(appModule)
+fun MainViewController(): UIViewController {
+    val lifecycle = LifecycleRegistry()
+    val rootComponent = DefaultRootComponent(
+        componentContext = DefaultComponentContext(lifecycle = lifecycle),
+    )
+    lifecycle.resume()
+    return ComposeUIViewController {
+        App(rootComponent = rootComponent)
     }
-    App()
 }

@@ -3,21 +3,32 @@ package com.scandoc.presentation.camera
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import com.scandoc.domain.model.DocumentCorners
+import com.scandoc.domain.model.Offset
 import com.scandoc.presentation.camera.component.DetectionOverlay
 import com.scandoc.presentation.camera.component.ModeSwitcher
 import com.scandoc.presentation.camera.component.ShutterButton
-import com.scandoc.presentation.component.ScanDocButton
+import com.scandoc.presentation.theme.ScanDocColors
 import com.scandoc.presentation.theme.ScanDocDimens
+import com.scandoc.presentation.theme.ScanDocShapes
+import com.scandoc.presentation.theme.ScanDocTheme
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun CameraScreen(
@@ -28,49 +39,108 @@ fun CameraScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
+            .background(Color.Black),
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(ScanDocDimens.spaceLg)
-                .background(MaterialTheme.colorScheme.surfaceVariant),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                text = if (state.isActive) "Camera preview pending platform view" else "Camera paused",
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.bodyLarge,
+        // Camera viewfinder placeholder with document detection overlay
+        Box(modifier = Modifier.fillMaxSize()) {
+            DetectionOverlay(
+                corners = state.detectedCorners,
+                modifier = Modifier.fillMaxSize(),
             )
-            DetectionOverlay(corners = state.detectedCorners)
         }
 
-        Column(
+        // Top bar
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .fillMaxWidth()
+                .padding(ScanDocDimens.spaceMd),
+        ) {
+            Icon(
+                imageVector = Icons.Default.CameraAlt,
+                contentDescription = "Document Scanner",
+                tint = ScanDocColors.Text,
+                modifier = Modifier.size(ScanDocDimens.iconSizeLg),
+            )
+        }
+
+        // Error snackbar
+        if (state.error != null) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = ScanDocDimens.space6xl)
+                    .padding(horizontal = ScanDocDimens.spaceMd),
+            ) {
+                Surface(
+                    shape = ScanDocShapes.Medium,
+                    color = ScanDocColors.Danger,
+                ) {
+                    Text(
+                        text = state.error,
+                        color = ScanDocColors.Text,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(
+                            horizontal = ScanDocDimens.spaceMd,
+                            vertical = ScanDocDimens.spaceXs,
+                        ),
+                    )
+                }
+            }
+        }
+
+        // Bottom control bar
+        Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .padding(ScanDocDimens.spaceLg),
-            verticalArrangement = Arrangement.spacedBy(ScanDocDimens.spaceMd),
-            horizontalAlignment = Alignment.CenterHorizontally,
+                .background(ScanDocColors.Ink.copy(alpha = 0.7f))
+                .padding(ScanDocDimens.spaceMd),
         ) {
-            state.error?.let {
-                Text(text = it, color = MaterialTheme.colorScheme.error)
-            }
             Row(
-                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 ModeSwitcher(
-                    autoCapture = state.isAutoCapture,
-                    onAutoCaptureChange = { onIntent(CameraIntent.ToggleAutoCapture(it)) },
+                    isFlashOn = state.isFlashOn,
+                    isAutoCapture = state.isAutoCapture,
+                    onToggleFlash = { onIntent(CameraIntent.ToggleFlash) },
+                    onToggleAutoCapture = { onIntent(CameraIntent.ToggleAutoCapture(it)) },
                 )
-                ScanDocButton(
-                    text = if (state.isFlashOn) "Flash on" else "Flash off",
-                    onClick = { onIntent(CameraIntent.ToggleFlash) },
+
+                ShutterButton(
+                    onClick = { onIntent(CameraIntent.Capture) },
+                    countdown = state.captureCountdown,
+                    enabled = state.isActive,
                 )
+
+                // Balance spacer matching ModeSwitcher width
+                Spacer(modifier = Modifier.weight(1f))
             }
-            ShutterButton(onClick = { onIntent(CameraIntent.Capture) })
         }
+    }
+}
+
+@Preview
+@Composable
+private fun CameraScreenPreview() {
+    ScanDocTheme {
+        CameraScreen(
+            state = CameraState(
+                isActive = true,
+                isFlashOn = false,
+                isAutoCapture = true,
+                detectedCorners = DocumentCorners(
+                    topLeft = Offset(0.1f, 0.05f),
+                    topRight = Offset(0.9f, 0.08f),
+                    bottomRight = Offset(0.88f, 0.95f),
+                    bottomLeft = Offset(0.12f, 0.92f),
+                ),
+            ),
+            onIntent = {},
+        )
     }
 }
