@@ -3,20 +3,19 @@ package com.scandoc
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
+import com.arkivanov.decompose.defaultComponentContext
+import com.scandoc.presentation.navigation.DefaultRootComponent
 
 class MainActivity : ComponentActivity() {
+
+    private val rootComponent by lazy {
+        DefaultRootComponent(componentContext = defaultComponentContext())
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            App()
+            App(rootComponent = rootComponent)
         }
     }
-}
-
-@Preview
-@Composable
-fun AppAndroidPreview() {
-    App()
 }
