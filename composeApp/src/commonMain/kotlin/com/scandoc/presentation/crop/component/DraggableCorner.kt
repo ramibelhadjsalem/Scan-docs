@@ -16,7 +16,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.round
 import com.scandoc.presentation.theme.ScanDocColors
 import com.scandoc.presentation.theme.ScanDocTheme
 import org.jetbrains.compose.ui.tooling.preview.Preview
