@@ -1,7 +1,8 @@
 package com.scandoc.presentation.component
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,17 +24,19 @@ import androidx.compose.ui.unit.dp
 import com.scandoc.domain.model.Document
 import com.scandoc.presentation.theme.ScanDocDimens
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DocumentCard(
     document: Document,
     onClick: () -> Unit,
+    onLongClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
-            .clickable(onClick = onClick)
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick)
             .background(MaterialTheme.colorScheme.surface)
             .padding(ScanDocDimens.spaceMd),
         horizontalArrangement = Arrangement.spacedBy(ScanDocDimens.spaceMd),

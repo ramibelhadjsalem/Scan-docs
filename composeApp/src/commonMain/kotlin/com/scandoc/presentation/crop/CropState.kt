@@ -9,6 +9,7 @@ data class CropState(
     val activeFilter: Filter = Filter.Auto,
     val isProcessing: Boolean = false,
     val error: String? = null,
+    val pendingPageCount: Int = 0,
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -17,7 +18,8 @@ data class CropState(
             corners == other.corners &&
             activeFilter == other.activeFilter &&
             isProcessing == other.isProcessing &&
-            error == other.error
+            error == other.error &&
+            pendingPageCount == other.pendingPageCount
     }
 
     override fun hashCode(): Int {
@@ -26,6 +28,7 @@ data class CropState(
         result = 31 * result + activeFilter.hashCode()
         result = 31 * result + isProcessing.hashCode()
         result = 31 * result + (error?.hashCode() ?: 0)
+        result = 31 * result + pendingPageCount
         return result
     }
 }
@@ -35,11 +38,13 @@ sealed interface CropIntent {
     data class UpdateCorners(val corners: DocumentCorners) : CropIntent
     data class SelectFilter(val filter: Filter) : CropIntent
     data object Confirm : CropIntent
+    data object AddAnotherPage : CropIntent
     data object Retake : CropIntent
 }
 
 sealed interface CropEffect {
     data class NavigateToViewer(val documentId: String) : CropEffect
     data object NavigateBack : CropEffect
+    data object NavigateToCamera : CropEffect
     data class ShowError(val message: String) : CropEffect
 }

@@ -9,11 +9,13 @@ import com.scandoc.presentation.component.DocumentCard
 fun DocumentRow(
     document: Document,
     onOpen: () -> Unit,
+    onRename: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     DocumentCard(
         document = document,
         onClick = onOpen,
+        onLongClick = onRename,
         modifier = modifier,
     )
 }

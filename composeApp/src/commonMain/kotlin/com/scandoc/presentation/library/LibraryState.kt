@@ -7,6 +7,8 @@ data class LibraryState(
     val query: String = "",
     val isLoading: Boolean = true,
     val error: String? = null,
+    val renamingDocument: Document? = null,
+    val renameInput: String = "",
 )
 
 sealed interface LibraryIntent {
@@ -15,6 +17,10 @@ sealed interface LibraryIntent {
     data class OpenDocument(val id: String) : LibraryIntent
     data class DeleteDocument(val id: String) : LibraryIntent
     data object StartScan : LibraryIntent
+    data class ShowRenameDialog(val document: Document) : LibraryIntent
+    data class UpdateRenameInput(val name: String) : LibraryIntent
+    data object ConfirmRename : LibraryIntent
+    data object DismissRenameDialog : LibraryIntent
 }
 
 sealed interface LibraryEffect {

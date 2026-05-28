@@ -8,6 +8,8 @@ data class ViewerState(
     val currentPageIndex: Int = 0,
     val activeTab: ViewerTab = ViewerTab.Image,
     val isExporting: Boolean = false,
+    val isRunningOcr: Boolean = false,
+    val isLoading: Boolean = true,
     val error: String? = null,
 )
 
@@ -19,6 +21,8 @@ sealed interface ViewerIntent {
     data class SelectTab(val tab: ViewerTab) : ViewerIntent
     data class Export(val format: ExportFormat) : ViewerIntent
     data object Share : ViewerIntent
+    data object RunOcr : ViewerIntent
+    data object NavigateBack : ViewerIntent
 }
 
 sealed interface ViewerEffect {

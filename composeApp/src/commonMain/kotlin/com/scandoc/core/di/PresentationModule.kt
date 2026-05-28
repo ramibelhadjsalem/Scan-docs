@@ -8,18 +8,27 @@ import org.koin.dsl.module
 
 val presentationModule = module {
     factory { CameraViewModel(captureFrame = get(), detectEdges = get()) }
-    factory { CropViewModel(applyPerspective = get(), applyFilter = get()) }
+    factory {
+        CropViewModel(
+            applyPerspective = get(),
+            applyFilter = get(),
+            createDocument = get(),
+            sessionHolder = get(),
+        )
+    }
     factory {
         LibraryViewModel(
             observeDocuments = get(),
             searchDocuments = get(),
             deleteDocument = get(),
+            renameDocument = get(),
         )
     }
     factory {
         ViewerViewModel(
             getDocument = get(),
             exportPdf = get(),
+            runOcrOnPage = get(),
         )
     }
 }
