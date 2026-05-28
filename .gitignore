@@ -1,0 +1,74 @@
+# Gradle
+.gradle/
+build/
+**/build/
+!gradle/wrapper/gradle-wrapper.jar
+local.properties
+gradle.properties.local
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+*.ipr
+*.iws
+captures/
+.externalNativeBuild/
+.cxx/
+*.ap_
+*.apk
+*.aab
+
+# Kotlin
+kotlin-js-store/
+
+# iOS / Xcode
+iosApp/*.xcworkspace
+iosApp/Pods/
+iosApp/Podfile.lock
+*.xcuserstate
+*.xccheckout
+*.xcscmblueprint
+DerivedData/
+*.moved-aside
+*.pbxuser
+!default.pbxuser
+*.perspectivev3
+!default.perspectivev3
+xcuserdata/
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# CocoaPods
+iosApp/Pods/
+
+# KMP generated
+composeApp/build/
+iosApp/build/
+
+# Secrets
+*.env
+*.env.*
+secrets.properties
+google-services.json
+GoogleService-Info.plist
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor
+*.swp
+*.swo
+*~
+.vscode/
+
+# Test output
+*.hprof
+test-results/
