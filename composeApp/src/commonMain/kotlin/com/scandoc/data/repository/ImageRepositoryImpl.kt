@@ -1,14 +1,31 @@
 package com.scandoc.data.repository
 
-import com.scandoc.core.result.Outcome
+import com.scandoc.data.storage.FileStorage
 import com.scandoc.domain.repository.ImageRepository
+import com.scandoc.domain.result.Outcome
+import com.scandoc.domain.result.toOutcome
 
-class ImageRepositoryImpl : ImageRepository {
-    // Implemented in Phase 4
+class ImageRepositoryImpl(
+    private val storage: FileStorage,
+) : ImageRepository {
+
     override suspend fun saveImage(bytes: ByteArray, documentId: String, pageIndex: Int): Outcome<String> =
-        Outcome.Success("")
+        runCatching {
+            storage.write(
+                path = imagePath(documentId = documentId, pageIndex = pageIndex),
+                bytes = bytes,
+            )
+        }.toOutcome()
+
     override suspend fun loadImage(path: String): Outcome<ByteArray> =
-        Outcome.Success(ByteArray(0))
+        runCatching { storage.read(path) }.toOutcome()
+
     override suspend fun deleteImage(path: String): Outcome<Unit> =
-        Outcome.Success(Unit)
+        runCatching { storage.delete(path) }.toOutcome()
+
+    private fun imagePath(documentId: String, pageIndex: Int): String {
+        val directory = storage.documentsDir.trimEnd('/')
+        val relativePath = "$documentId/page_$pageIndex.jpg"
+        return if (directory.isEmpty()) relativePath else "$directory/$relativePath"
+    }
 }

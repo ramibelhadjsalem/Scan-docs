@@ -1,6 +1,6 @@
 package com.scandoc.domain.repository
 
-import com.scandoc.core.result.Outcome
+import com.scandoc.domain.result.Outcome
 
 interface ImageRepository {
     suspend fun saveImage(bytes: ByteArray, documentId: String, pageIndex: Int): Outcome<String>

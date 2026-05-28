@@ -1,6 +1,6 @@
 package com.scandoc.fake
 
-import com.scandoc.core.result.Outcome
+import com.scandoc.domain.result.Outcome
 import com.scandoc.domain.model.Document
 import com.scandoc.domain.repository.DocumentRepository
 import kotlinx.coroutines.flow.Flow

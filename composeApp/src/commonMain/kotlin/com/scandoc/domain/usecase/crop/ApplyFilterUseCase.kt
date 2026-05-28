@@ -1,8 +1,8 @@
 package com.scandoc.domain.usecase.crop
 
-import com.scandoc.core.platform.ImageProcessor
-import com.scandoc.core.result.Outcome
-import com.scandoc.core.result.toOutcome
+import com.scandoc.domain.platform.ImageProcessor
+import com.scandoc.domain.result.Outcome
+import com.scandoc.domain.result.toOutcome
 import com.scandoc.domain.model.Filter
 
 class ApplyFilterUseCase(

@@ -1,6 +1,6 @@
 package com.scandoc.domain.usecase.library
 
-import com.scandoc.core.result.Outcome
+import com.scandoc.domain.result.Outcome
 import com.scandoc.fake.FakeDocumentRepository
 import com.scandoc.fake.FakeImageRepository
 import com.scandoc.testDocument

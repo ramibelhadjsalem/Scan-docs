@@ -1,7 +1,7 @@
 package com.scandoc.domain.usecase.ocr
 
-import com.scandoc.core.platform.OcrEngine
-import com.scandoc.core.result.Outcome
+import com.scandoc.domain.platform.OcrEngine
+import com.scandoc.domain.result.Outcome
 import com.scandoc.domain.model.OcrResult
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test

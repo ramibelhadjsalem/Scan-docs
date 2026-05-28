@@ -1,8 +1,8 @@
 package com.scandoc.domain.usecase.camera
 
-import com.scandoc.core.platform.CameraController
-import com.scandoc.core.result.Outcome
-import com.scandoc.core.result.toOutcome
+import com.scandoc.domain.platform.CameraController
+import com.scandoc.domain.result.Outcome
+import com.scandoc.domain.result.toOutcome
 
 class CaptureFrameUseCase(
     private val cameraController: CameraController,
