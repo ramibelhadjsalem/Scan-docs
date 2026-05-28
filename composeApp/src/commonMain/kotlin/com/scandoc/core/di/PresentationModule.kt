@@ -10,6 +10,6 @@ import org.koin.dsl.module
 val presentationModule = module {
     viewModel { LibraryViewModel(get(), get(), get()) }
     viewModel { CameraViewModel(get(), get()) }
-    viewModel { CropViewModel(get(), get()) }
-    viewModel { ViewerViewModel(get()) }
+    viewModel { CropViewModel(get(), get(), get(), get()) }
+    viewModel { ViewerViewModel(get(), get()) }
 }
