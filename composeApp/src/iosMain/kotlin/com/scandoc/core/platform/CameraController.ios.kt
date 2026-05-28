@@ -1,5 +1,6 @@
 package com.scandoc.core.platform
 
+import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ObjCObjectVar
 import kotlinx.cinterop.addressOf
@@ -16,14 +17,18 @@ import platform.AVFoundation.AVCaptureDevice
 import platform.AVFoundation.AVCaptureDeviceInput
 import platform.AVFoundation.AVCapturePhoto
 import platform.AVFoundation.AVCapturePhotoOutput
+import platform.AVFoundation.AVCapturePhotoCaptureDelegate
 import platform.AVFoundation.AVCapturePhotoSettings
 import platform.AVFoundation.AVCaptureSession
 import platform.AVFoundation.AVCaptureSessionPresetPhoto
+import platform.AVFoundation.AVCaptureTorchModeOff
+import platform.AVFoundation.AVCaptureTorchModeOn
 import platform.AVFoundation.AVMediaTypeVideo
 import platform.AVFoundation.fileDataRepresentation
 import platform.AVFoundation.hasTorch
 import platform.AVFoundation.torchMode
 import platform.Foundation.NSError
+import platform.darwin.NSObject
 import platform.darwin.dispatch_async
 import platform.darwin.dispatch_get_main_queue
 import platform.darwin.dispatch_queue_create
@@ -83,12 +88,13 @@ actual class PlatformCameraController actual constructor() : com.scandoc.domain.
         runCatching {
             device.lockForConfiguration(null)
             if (device.hasTorch) {
-                device.torchMode = if (enabled) AVTorchModeOn else AVTorchModeOff
+                device.torchMode = if (enabled) AVCaptureTorchModeOn else AVCaptureTorchModeOff
             }
             device.unlockForConfiguration()
         }
     }
 
+    @OptIn(BetaInteropApi::class)
     private fun configureSession() {
         session.beginConfiguration()
         session.sessionPreset = AVCaptureSessionPresetPhoto
@@ -98,20 +104,24 @@ actual class PlatformCameraController actual constructor() : com.scandoc.domain.
             return
         }
 
-        memScoped {
+        val inputAdded = memScoped {
             val errorPtr = alloc<ObjCObjectVar<NSError?>>()
             val input = AVCaptureDeviceInput(device = device, error = errorPtr.ptr)
-            val error = errorPtr.value
-            if (error != null || input == null) {
-                session.commitConfiguration()
-                return
+            if (errorPtr.value != null || input == null) return@memScoped false
+            if (session.canAddInput(input)) {
+                session.addInput(input)
+                true
+            } else {
+                false
             }
-            if (session.canAddInput(input)) session.addInput(input)
+        }
+
+        if (!inputAdded) {
+            session.commitConfiguration()
+            return
         }
 
         if (session.canAddOutput(photoOutput)) session.addOutput(photoOutput)
-
-        photoOutput.isHighResolutionCaptureEnabled = true
 
         session.commitConfiguration()
     }
@@ -123,11 +133,11 @@ actual class PlatformCameraController actual constructor() : com.scandoc.domain.
 private class PhotoDelegate(
     private val onCapture: (ByteArray) -> Unit,
     private val onError: (NSError) -> Unit,
-) : platform.darwin.NSObject(), AVCapturePhotoCaptureDelegate {
+) : NSObject(), AVCapturePhotoCaptureDelegate {
 
     @OptIn(ExperimentalForeignApi::class)
     override fun captureOutput(
-        output: AVCapturePhotoOutput,
+        captureOutput: AVCapturePhotoOutput,
         didFinishProcessingPhoto: AVCapturePhoto,
         error: NSError?,
     ) {
@@ -140,8 +150,7 @@ private class PhotoDelegate(
             onError(NSError(domain = "ScanDoc", code = -1, userInfo = null))
             return
         }
-        val bytes = data.toByteArray()
-        onCapture(bytes)
+        onCapture(data.toByteArray())
     }
 }
 
