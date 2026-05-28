@@ -1,8 +1,8 @@
 package com.scandoc.data.storage
 
-import com.scandoc.core.platform.AppFileSystem
+import com.scandoc.core.platform.FileSystemAccess
 
-class FileStorage(private val appFileSystem: AppFileSystem) {
+class FileStorage(private val appFileSystem: FileSystemAccess) {
 
     val documentsDir: String get() = appFileSystem.documentsDir
 

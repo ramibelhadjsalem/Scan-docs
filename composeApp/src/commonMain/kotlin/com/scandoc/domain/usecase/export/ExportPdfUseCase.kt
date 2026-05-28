@@ -1,14 +1,14 @@
 package com.scandoc.domain.usecase.export
 
-import com.scandoc.core.platform.AppFileSystem
-import com.scandoc.core.platform.PdfExporter
+import com.scandoc.core.platform.FileSystemAccess
+import com.scandoc.core.platform.PdfExportAccess
 import com.scandoc.core.result.Outcome
 import com.scandoc.core.result.toOutcome
 import com.scandoc.domain.model.Document
 
 class ExportPdfUseCase(
-    private val pdfExporter: PdfExporter,
-    private val fileSystem: AppFileSystem,
+    private val pdfExporter: PdfExportAccess,
+    private val fileSystem: FileSystemAccess,
 ) {
     suspend operator fun invoke(document: Document): Outcome<String> =
         runCatching {

@@ -9,7 +9,7 @@ import platform.Foundation.NSDocumentDirectory
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSUserDomainMask
 
-actual class AppFileSystem {
+actual class AppFileSystem : FileSystemAccess {
 
     actual val documentsDir: String = run {
         NSFileManager.defaultManager.URLsForDirectory(

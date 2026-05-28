@@ -8,7 +8,7 @@ import okio.Path.Companion.toPath
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-actual class AppFileSystem : KoinComponent {
+actual class AppFileSystem : FileSystemAccess, KoinComponent {
     private val context: Context by inject()
 
     actual val documentsDir: String get() = context.filesDir.absolutePath

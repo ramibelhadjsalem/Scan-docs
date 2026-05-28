@@ -7,7 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 
-actual class PdfExporter {
+actual class PdfExporter : PdfExportAccess {
 
     actual suspend fun export(pages: List<Page>, outputPath: String): String =
         withContext(Dispatchers.IO) {

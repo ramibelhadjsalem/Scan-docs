@@ -1,13 +1,13 @@
 package com.scandoc.domain.usecase.export
 
-import com.scandoc.core.platform.AppFileSystem
+import com.scandoc.core.platform.FileSystemAccess
 import com.scandoc.core.result.Outcome
 import com.scandoc.core.result.toOutcome
 import com.scandoc.domain.model.Document
 import com.scandoc.domain.model.ExportFormat
 
 class ExportImagesUseCase(
-    private val fileSystem: AppFileSystem,
+    private val fileSystem: FileSystemAccess,
 ) {
     suspend operator fun invoke(
         document: Document,

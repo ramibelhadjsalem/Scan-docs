@@ -8,6 +8,6 @@ import com.scandoc.domain.model.Page
  * [outputPath] unchanged so that callers receive a valid (though empty) file path and can
  * proceed without crashing.
  */
-actual class PdfExporter {
+actual class PdfExporter : PdfExportAccess {
     actual suspend fun export(pages: List<Page>, outputPath: String): String = outputPath
 }
