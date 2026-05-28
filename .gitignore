@@ -73,3 +73,6 @@ Thumbs.db
 # Test output
 *.hprof
 test-results/
+
+
+.kotlin/

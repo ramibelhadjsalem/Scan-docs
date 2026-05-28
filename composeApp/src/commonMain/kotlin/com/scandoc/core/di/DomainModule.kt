@@ -7,6 +7,7 @@ import com.scandoc.domain.usecase.crop.ApplyPerspectiveUseCase
 import com.scandoc.domain.usecase.export.ExportImagesUseCase
 import com.scandoc.domain.usecase.export.ExportPdfUseCase
 import com.scandoc.domain.usecase.library.DeleteDocumentUseCase
+import com.scandoc.domain.usecase.library.GetDocumentUseCase
 import com.scandoc.domain.usecase.library.ObserveDocumentsUseCase
 import com.scandoc.domain.usecase.library.SearchDocumentsUseCase
 import com.scandoc.domain.usecase.ocr.RunOcrUseCase
@@ -20,6 +21,7 @@ val domainModule = module {
     factory { RunOcrUseCase(ocrEngine = get()) }
     factory { ExportPdfUseCase(pdfExporter = get(), fileSystem = get()) }
     factory { ExportImagesUseCase(fileSystem = get()) }
+    factory { GetDocumentUseCase(repository = get()) }
     factory { ObserveDocumentsUseCase(repository = get()) }
     factory { SearchDocumentsUseCase(repository = get()) }
     factory { DeleteDocumentUseCase(documentRepository = get(), imageRepository = get()) }

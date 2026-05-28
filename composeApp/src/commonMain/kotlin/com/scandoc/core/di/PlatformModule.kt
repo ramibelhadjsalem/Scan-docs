@@ -1,7 +1,5 @@
 package com.scandoc.core.di
 
-import org.koin.dsl.module
+import org.koin.core.module.Module
 
-val platformModule = module {
-    // Populated in Phase 6
-}
+expect val platformModule: Module

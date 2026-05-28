@@ -1,3 +1,19 @@
 package com.scandoc.presentation.library.component
 
-// TODO Phase 7
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import com.scandoc.domain.model.Document
+import com.scandoc.presentation.component.DocumentCard
+
+@Composable
+fun DocumentRow(
+    document: Document,
+    onOpen: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    DocumentCard(
+        document = document,
+        onClick = onOpen,
+        modifier = modifier,
+    )
+}

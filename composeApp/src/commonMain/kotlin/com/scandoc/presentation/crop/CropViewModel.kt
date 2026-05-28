@@ -2,6 +2,7 @@ package com.scandoc.presentation.crop
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.scandoc.domain.result.Outcome
 import com.scandoc.domain.usecase.crop.ApplyFilterUseCase
 import com.scandoc.domain.usecase.crop.ApplyPerspectiveUseCase
 import kotlinx.coroutines.channels.Channel
@@ -35,6 +36,28 @@ class CropViewModel(
     }
 
     private fun confirm() {
-        // Implemented in Phase 7
+        val current = _state.value
+        val corners = current.corners
+        if (corners == null) {
+            viewModelScope.launch { _effects.send(CropEffect.ShowError("No document edges selected")) }
+            return
+        }
+
+        viewModelScope.launch {
+            _state.update { it.copy(isProcessing = true) }
+            val perspective = applyPerspective(current.imageBytes, corners)
+            val processed = when (perspective) {
+                is Outcome.Success -> applyFilter(perspective.value, current.activeFilter)
+                is Outcome.Failure -> perspective
+            }
+
+            when (processed) {
+                is Outcome.Success -> _effects.send(CropEffect.NavigateToViewer("draft-scan"))
+                is Outcome.Failure -> _effects.send(
+                    CropEffect.ShowError(processed.error.message ?: "Crop failed"),
+                )
+            }
+            _state.update { it.copy(isProcessing = false) }
+        }
     }
 }

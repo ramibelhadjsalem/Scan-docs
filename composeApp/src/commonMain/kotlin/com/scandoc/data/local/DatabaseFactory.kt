@@ -7,6 +7,6 @@ import com.scandoc.db.ScanDocDatabase
  * Android: AndroidSqliteDriver with Context.
  * iOS: NativeSqliteDriver.
  */
-expect class DatabaseFactory() {
+expect class DatabaseFactory {
     fun create(): ScanDocDatabase
 }
