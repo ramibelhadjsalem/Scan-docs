@@ -1,4 +1,4 @@
-package com.scandoc.core.result
+package com.scandoc.domain.result
 
 sealed interface Outcome<out T> {
     data class Success<T>(val value: T) : Outcome<T>

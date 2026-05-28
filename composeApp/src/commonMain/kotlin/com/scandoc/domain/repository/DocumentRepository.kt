@@ -1,6 +1,6 @@
 package com.scandoc.domain.repository
 
-import com.scandoc.core.result.Outcome
+import com.scandoc.domain.result.Outcome
 import com.scandoc.domain.model.Document
 import kotlinx.coroutines.flow.Flow
 

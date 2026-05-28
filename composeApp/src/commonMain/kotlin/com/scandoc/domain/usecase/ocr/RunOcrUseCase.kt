@@ -1,8 +1,8 @@
 package com.scandoc.domain.usecase.ocr
 
-import com.scandoc.core.platform.OcrEngine
-import com.scandoc.core.result.Outcome
-import com.scandoc.core.result.toOutcome
+import com.scandoc.domain.platform.OcrEngine
+import com.scandoc.domain.result.Outcome
+import com.scandoc.domain.result.toOutcome
 import com.scandoc.domain.model.OcrResult
 
 class RunOcrUseCase(
