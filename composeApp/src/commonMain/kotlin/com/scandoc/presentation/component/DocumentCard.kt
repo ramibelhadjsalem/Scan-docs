@@ -139,8 +139,14 @@ fun DocumentCardLightPreview() {
                 document = previewDocument().copy(
                     name = "Contract Draft — a very long document name that should truncate",
                     pages = listOf(
-                        Page(id = "p1", orderIndex = 0, imagePath = "/p1.jpg", ocrResult = null, width = 1080, height = 1920),
-                        Page(id = "p2", orderIndex = 1, imagePath = "/p2.jpg", ocrResult = null, width = 1080, height = 1920),
+                        Page(
+                            id = "p1", orderIndex = 0, imagePath = "/p1.jpg",
+                            ocrResult = null, width = 1080, height = 1920,
+                        ),
+                        Page(
+                            id = "p2", orderIndex = 1, imagePath = "/p2.jpg",
+                            ocrResult = null, width = 1080, height = 1920,
+                        ),
                     ),
                 ),
                 onClick = {},

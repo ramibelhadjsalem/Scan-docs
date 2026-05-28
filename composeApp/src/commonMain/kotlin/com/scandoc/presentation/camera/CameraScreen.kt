@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DocumentScanner
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -59,7 +59,7 @@ fun CameraScreen(
                 .padding(ScanDocDimens.spaceMd),
         ) {
             Icon(
-                imageVector = Icons.Default.DocumentScanner,
+                imageVector = Icons.Default.CameraAlt,
                 contentDescription = "Document Scanner",
                 tint = ScanDocColors.Text,
                 modifier = Modifier.size(ScanDocDimens.iconSizeLg),

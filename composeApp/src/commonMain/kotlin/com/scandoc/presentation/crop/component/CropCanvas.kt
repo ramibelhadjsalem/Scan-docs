@@ -16,7 +16,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
 import com.scandoc.domain.model.DocumentCorners
 import com.scandoc.presentation.theme.ScanDocColors
@@ -67,7 +66,6 @@ fun CropCanvas(
             val br = normToPixel(c.bottomRight, canvasWidth, canvasHeight)
             val bl = normToPixel(c.bottomLeft, canvasWidth, canvasHeight)
             val strokeWidth = 2.dp.toPx()
-            val stroke = Stroke(width = strokeWidth)
 
             drawLine(
                 color = ScanDocColors.Signal,

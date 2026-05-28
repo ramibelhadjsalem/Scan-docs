@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
@@ -15,9 +14,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.layout
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.round
 import com.scandoc.presentation.theme.ScanDocColors
 import com.scandoc.presentation.theme.ScanDocTheme
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -29,26 +28,21 @@ fun DraggableCorner(
     onDrag: (delta: androidx.compose.ui.geometry.Offset) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val handleSize = 24.dp
+    val handleSizePx = 12.dp
 
     Box(
         modifier = modifier
-            .layout { measurable, constraints ->
-                val placeable = measurable.measure(constraints)
-                layout(placeable.width, placeable.height) {
-                    placeable.placeRelative(
-                        IntOffset(
-                            x = (offset.x - handleSize.roundToPx() / 2f).roundToInt(),
-                            y = (offset.y - handleSize.roundToPx() / 2f).roundToInt(),
-                        ),
-                    )
-                }
+            .offset {
+                IntOffset(
+                    x = (offset.x - handleSizePx.roundToPx()).roundToInt(),
+                    y = (offset.y - handleSizePx.roundToPx()).roundToInt(),
+                )
             },
     ) {
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
-                .size(handleSize)
+                .size(24.dp)
                 .border(
                     width = 2.dp,
                     color = ScanDocColors.Signal,
