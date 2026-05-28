@@ -20,7 +20,7 @@ actual val platformModule: Module = module {
     single<DatabaseFactory> { DatabaseFactory(androidContext()) }
     single<ScanDocDatabase> { get<DatabaseFactory>().create() }
     single<DomainAppFileSystem> { AppFileSystem(androidContext()) }
-    single<CameraController> { PlatformCameraController() }
+    single<CameraController> { PlatformCameraController(androidContext()) }
     single<ImageProcessor> { PlatformImageProcessor() }
     single<OcrEngine> { PlatformOcrEngine() }
     single<DomainPdfExporter> { PlatformPdfExporter() }

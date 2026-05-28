@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
  * Android: CameraX with ImageAnalysis use case.
  * iOS: AVCaptureSession with AVCaptureVideoDataOutput.
  */
-expect class PlatformCameraController() : com.scandoc.domain.platform.CameraController {
+expect class PlatformCameraController : com.scandoc.domain.platform.CameraController {
     override val frames: Flow<ByteArray>
     override suspend fun start()
     override suspend fun stop()
