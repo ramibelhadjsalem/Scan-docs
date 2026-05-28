@@ -1,5 +1,6 @@
 package com.scandoc.domain.usecase.ocr
 
+import com.scandoc.core.platform.OcrEngine
 import com.scandoc.core.result.Outcome
 import com.scandoc.domain.model.OcrResult
 import kotlinx.coroutines.test.runTest
@@ -38,20 +39,23 @@ class RunOcrUseCaseTest {
     }
 
     @Test
-    fun `should return failure when image bytes are empty`() = runTest {
-        fakeOcrEngine.shouldThrow = true
+    fun `should pass image bytes to engine unchanged`() = runTest {
+        val imageBytes = ByteArray(100) { it.toByte() }
+        fakeOcrEngine.resultToReturn = OcrResult("", emptyList(), 0f, null)
 
-        val result = useCase(ByteArray(0))
+        useCase(imageBytes)
 
-        assertIs<Outcome.Failure>(result)
+        assertEquals(imageBytes.toList(), fakeOcrEngine.lastReceivedBytes?.toList())
     }
 }
 
-private class FakeOcrEngine : com.scandoc.core.platform.OcrEngine() {
+private class FakeOcrEngine : OcrEngine {
     var resultToReturn: OcrResult = OcrResult("", emptyList(), 0f, null)
     var shouldThrow = false
+    var lastReceivedBytes: ByteArray? = null
 
     override suspend fun recognize(imageBytes: ByteArray): OcrResult {
+        lastReceivedBytes = imageBytes
         if (shouldThrow) throw IllegalStateException("OCR engine failure")
         return resultToReturn
     }

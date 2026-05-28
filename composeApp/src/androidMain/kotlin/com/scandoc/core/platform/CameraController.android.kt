@@ -4,10 +4,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 
 // Android actual — CameraX (Phase 6)
-actual class CameraController {
-    actual val frames: Flow<ByteArray> = emptyFlow()
-    actual suspend fun start() {}
-    actual suspend fun stop() {}
-    actual suspend fun capture(): ByteArray = ByteArray(0)
-    actual suspend fun setFlash(enabled: Boolean) {}
+actual class PlatformCameraController actual constructor() : CameraController {
+    override val frames: Flow<ByteArray> = emptyFlow()
+    override suspend fun start() {}
+    override suspend fun stop() {}
+    override suspend fun capture(): ByteArray = ByteArray(0)
+    override suspend fun setFlash(enabled: Boolean) {}
 }
