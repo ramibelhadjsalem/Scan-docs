@@ -2,6 +2,8 @@ package com.scandoc.core.di
 
 import com.scandoc.domain.usecase.camera.CaptureFrameUseCase
 import com.scandoc.domain.usecase.camera.DetectEdgesUseCase
+import com.scandoc.domain.usecase.camera.StartCameraUseCase
+import com.scandoc.domain.usecase.camera.StopCameraUseCase
 import com.scandoc.domain.usecase.crop.ApplyFilterUseCase
 import com.scandoc.domain.usecase.crop.ApplyPerspectiveUseCase
 import com.scandoc.domain.usecase.crop.SaveDocumentUseCase
@@ -15,11 +17,13 @@ import com.scandoc.domain.usecase.ocr.RunOcrUseCase
 import org.koin.dsl.module
 
 val domainModule = module {
+    factory { StartCameraUseCase(cameraController = get()) }
+    factory { StopCameraUseCase(cameraController = get()) }
     factory { CaptureFrameUseCase(cameraController = get()) }
     factory { DetectEdgesUseCase(imageProcessor = get()) }
     factory { ApplyPerspectiveUseCase(imageProcessor = get()) }
     factory { ApplyFilterUseCase(imageProcessor = get()) }
-    factory { SaveDocumentUseCase(documentRepository = get(), imageRepository = get()) }
+    factory { SaveDocumentUseCase(documentRepository = get(), imageRepository = get(), ocrEngine = get()) }
     factory { RunOcrUseCase(ocrEngine = get()) }
     factory { ExportPdfUseCase(pdfExporter = get(), fileSystem = get()) }
     factory { ExportImagesUseCase(fileSystem = get()) }

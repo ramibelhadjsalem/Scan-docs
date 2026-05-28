@@ -2,6 +2,7 @@ package com.scandoc.domain.usecase.crop
 
 import com.scandoc.domain.model.Document
 import com.scandoc.domain.model.Page
+import com.scandoc.domain.platform.OcrEngine
 import com.scandoc.domain.repository.DocumentRepository
 import com.scandoc.domain.repository.ImageRepository
 import com.scandoc.domain.result.Outcome
@@ -12,6 +13,7 @@ import kotlin.random.Random
 class SaveDocumentUseCase(
     private val documentRepository: DocumentRepository,
     private val imageRepository: ImageRepository,
+    private val ocrEngine: OcrEngine,
 ) {
     suspend operator fun invoke(
         name: String,
@@ -27,12 +29,16 @@ class SaveDocumentUseCase(
             is Outcome.Success -> saveResult.value
             is Outcome.Failure -> throw saveResult.error
         }
+
+        // OCR is non-fatal: failure leaves ocrResult null
+        val ocrResult = runCatching { ocrEngine.recognize(imageBytes) }.getOrNull()
+
         val now = Clock.System.now()
         val page = Page(
             id = generateId(),
             orderIndex = 0,
             imagePath = imagePath,
-            ocrResult = null,
+            ocrResult = ocrResult,
             width = 0,
             height = 0,
         )

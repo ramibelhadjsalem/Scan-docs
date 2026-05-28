@@ -7,6 +7,7 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.ImageProxy
+import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
@@ -44,6 +45,8 @@ actual class PlatformCameraController(
     )
     actual override val frames: Flow<ByteArray> = _frames.asSharedFlow()
 
+    var previewSurfaceProvider: Preview.SurfaceProvider? = null
+
     private var imageCapture: ImageCapture? = null
     private var camera: Camera? = null
 
@@ -74,11 +77,18 @@ actual class PlatformCameraController(
                 }
             }
 
+        val useCases = buildList {
+            add(capture)
+            add(analysis)
+            previewSurfaceProvider?.let { sp ->
+                add(Preview.Builder().build().also { it.setSurfaceProvider(sp) })
+            }
+        }
+
         camera = provider.bindToLifecycle(
             this@PlatformCameraController,
             CameraSelector.DEFAULT_BACK_CAMERA,
-            capture,
-            analysis,
+            *useCases.toTypedArray(),
         )
     }
 

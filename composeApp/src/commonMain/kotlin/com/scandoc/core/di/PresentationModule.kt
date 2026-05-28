@@ -8,7 +8,7 @@ import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 val presentationModule = module {
-    viewModel { CameraViewModel(captureFrame = get(), detectEdges = get()) }
+    viewModel { CameraViewModel(captureFrame = get(), detectEdges = get(), startCamera = get(), stopCamera = get()) }
     viewModel { CropViewModel(applyPerspective = get(), applyFilter = get(), saveDocument = get()) }
     viewModel {
         LibraryViewModel(

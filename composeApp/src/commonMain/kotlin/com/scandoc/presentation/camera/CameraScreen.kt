@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.scandoc.domain.model.DocumentCorners
 import com.scandoc.domain.model.Offset
+import com.scandoc.presentation.camera.component.CameraPreview
 import com.scandoc.presentation.camera.component.DetectionOverlay
 import com.scandoc.presentation.camera.component.ModeSwitcher
 import com.scandoc.presentation.camera.component.ShutterButton
@@ -41,8 +42,8 @@ fun CameraScreen(
             .fillMaxSize()
             .background(Color.Black),
     ) {
-        // Camera viewfinder placeholder with document detection overlay
         Box(modifier = Modifier.fillMaxSize()) {
+            CameraPreview(modifier = Modifier.fillMaxSize())
             DetectionOverlay(
                 corners = state.detectedCorners,
                 modifier = Modifier.fillMaxSize(),

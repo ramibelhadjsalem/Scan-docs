@@ -3,19 +3,22 @@ package com.scandoc.domain.usecase.crop
 import com.scandoc.domain.result.Outcome
 import com.scandoc.fake.FakeDocumentRepository
 import com.scandoc.fake.FakeImageRepository
+import com.scandoc.fake.FakeOcrEngine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class SaveDocumentUseCaseTest {
 
     private val fakeDocRepo = FakeDocumentRepository()
     private val fakeImageRepo = FakeImageRepository()
-    private val useCase = SaveDocumentUseCase(fakeDocRepo, fakeImageRepo)
+    private val fakeOcrEngine = FakeOcrEngine()
+    private val useCase = SaveDocumentUseCase(fakeDocRepo, fakeImageRepo, fakeOcrEngine)
 
     @Test
     fun `should persist document and return it when save succeeds`() = runTest {
@@ -36,6 +39,26 @@ class SaveDocumentUseCaseTest {
         assertIs<Outcome.Success<*>>(result)
         val imagePath = result.value.pages.first().imagePath
         assertTrue(fakeImageRepo.savedImages.containsKey(imagePath))
+    }
+
+    @Test
+    fun `should save page with ocr result when ocr engine succeeds`() = runTest {
+        fakeOcrEngine.resultToReturn = fakeOcrEngine.resultToReturn.copy(fullText = "Invoice total: 100")
+
+        val result = useCase("Invoice", ByteArray(100))
+
+        assertIs<Outcome.Success<*>>(result)
+        assertEquals("Invoice total: 100", result.value.pages.first().ocrResult?.fullText)
+    }
+
+    @Test
+    fun `should save page with null ocr result when ocr engine fails`() = runTest {
+        fakeOcrEngine.shouldFail = true
+
+        val result = useCase("Test", ByteArray(100))
+
+        assertIs<Outcome.Success<*>>(result)
+        assertNull(result.value.pages.first().ocrResult)
     }
 
     @Test
