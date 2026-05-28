@@ -8,6 +8,10 @@ class DeleteDocumentUseCase(
     private val documentRepository: DocumentRepository,
     private val imageRepository: ImageRepository,
 ) {
-    suspend operator fun invoke(id: String): Outcome<Unit> =
-        documentRepository.delete(id)
+    suspend operator fun invoke(id: String): Outcome<Unit> {
+        documentRepository.getById(id)?.pages?.forEach { page ->
+            imageRepository.deleteImage(page.imagePath)
+        }
+        return documentRepository.delete(id)
+    }
 }

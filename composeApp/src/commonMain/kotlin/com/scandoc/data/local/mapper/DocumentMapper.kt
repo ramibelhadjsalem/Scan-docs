@@ -28,11 +28,15 @@ fun PageRow.toDomain(): Page =
         height = height.toInt(),
     )
 
+// ASCII unit separator (0x1F) — a non-printable control character safe to use as a delimiter
+// in user-facing tag strings, which can contain commas, spaces, and other printable characters.
+private const val TAG_SEPARATOR = ""
+
 fun List<String>.toStorageTags(): String =
-    joinToString(separator = ",")
+    joinToString(separator = TAG_SEPARATOR)
 
 fun String.toDomainTags(): List<String> =
-    split(",")
+    split(TAG_SEPARATOR)
         .map { it.trim() }
         .filter { it.isNotEmpty() }
 

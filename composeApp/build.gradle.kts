@@ -6,7 +6,6 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.compose.compiler)
-    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.sqldelight)
 }
 
@@ -39,7 +38,6 @@ kotlin {
             implementation(compose.components.uiToolingPreview)
 
             implementation(libs.kotlinx.coroutines.core)
-            implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.datetime)
 
             implementation(libs.koin.core)
@@ -51,6 +49,7 @@ kotlin {
 
             implementation(libs.okio)
 
+            // Reserved for Phase 8 navigation wiring
             implementation(libs.decompose)
             implementation(libs.decompose.compose)
         }

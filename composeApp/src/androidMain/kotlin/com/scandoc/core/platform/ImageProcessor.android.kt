@@ -16,6 +16,7 @@ actual class PlatformImageProcessor actual constructor() : com.scandoc.domain.pl
         val bitmap = imageBytes.decodeBitmap() ?: return null
         val width = bitmap.width.toFloat()
         val height = bitmap.height.toFloat()
+        bitmap.recycle()
         return DocumentCorners(
             topLeft = Offset(0f, 0f),
             topRight = Offset(width, 0f),
@@ -29,7 +30,10 @@ actual class PlatformImageProcessor actual constructor() : com.scandoc.domain.pl
 
     actual override suspend fun applyFilter(imageBytes: ByteArray, filter: Filter): ByteArray {
         val bitmap = imageBytes.decodeBitmap() ?: return imageBytes
-        if (filter == Filter.Original || filter == Filter.Photo || filter == Filter.Auto) return imageBytes
+        if (filter == Filter.Original || filter == Filter.Photo || filter == Filter.Auto) {
+            bitmap.recycle()
+            return imageBytes
+        }
 
         val output = Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
         val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -44,6 +48,7 @@ actual class PlatformImageProcessor actual constructor() : com.scandoc.domain.pl
             }
         }
         Canvas(output).drawBitmap(bitmap, 0f, 0f, paint)
+        bitmap.recycle()
         return output.toJpegBytes()
     }
 

@@ -23,7 +23,12 @@ class FakeDocumentRepository : DocumentRepository {
 
     override fun search(query: String): Flow<List<Document>> =
         store.map { docs ->
-            docs.filter { it.name.contains(query, ignoreCase = true) }
+            docs.filter { doc ->
+                doc.name.contains(query, ignoreCase = true) ||
+                    doc.pages.any { page ->
+                        page.ocrResult?.fullText?.contains(query, ignoreCase = true) == true
+                    }
+            }
         }
 
     override suspend fun save(document: Document): Outcome<Unit> {

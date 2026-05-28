@@ -4,7 +4,7 @@ import com.scandoc.domain.model.Page
 import okio.FileSystem
 import okio.Path.Companion.toPath
 
-actual class PdfExporter : com.scandoc.domain.platform.PdfExporter {
+actual class PlatformPdfExporter : com.scandoc.domain.platform.PdfExporter {
     actual override suspend fun export(pages: List<Page>, outputPath: String): String {
         val path = outputPath.toPath()
         path.parent?.let { FileSystem.SYSTEM.createDirectories(it) }

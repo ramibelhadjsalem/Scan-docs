@@ -12,7 +12,6 @@ import com.scandoc.domain.result.toOutcome
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 
 class DocumentRepositoryImpl(
     private val database: ScanDocDatabase,
@@ -20,11 +19,14 @@ class DocumentRepositoryImpl(
 
     private val queries = database.scanDocDatabaseQueries
 
-    override fun observeAll(): Flow<List<Document>> =
-        queries.selectAllDocuments()
-            .asFlow()
-            .mapToList(Dispatchers.Default)
-            .map { rows -> rows.map { it.toDomain(pages = pagesForDocument(it.id)) } }
+    override fun observeAll(): Flow<List<Document>> {
+        val docFlow = queries.selectAllDocuments().asFlow().mapToList(Dispatchers.Default)
+        val pageFlow = queries.selectAllPages().asFlow().mapToList(Dispatchers.Default)
+        return combine(docFlow, pageFlow) { docRows, pageRows ->
+            val pagesByDocId = pageRows.groupBy { it.documentId }
+            docRows.map { it.toDomain(pagesByDocId[it.id].orEmpty()) }
+        }
+    }
 
     override suspend fun getById(id: String): Document? =
         queries.selectDocumentById(id)
@@ -34,21 +36,11 @@ class DocumentRepositoryImpl(
     override fun search(query: String): Flow<List<Document>> {
         val trimmedQuery = query.trim()
         if (trimmedQuery.isEmpty()) return observeAll()
-
-        val ocrMatches = queries.searchByOcrText(trimmedQuery)
-            .asFlow()
-            .mapToList(Dispatchers.Default)
-            .map { rows -> rows.map { it.toDomain(pages = pagesForDocument(it.id)) } }
-
-        val nameMatches = observeAll()
-            .map { documents ->
-                documents.filter { it.name.contains(trimmedQuery, ignoreCase = true) }
-            }
-
-        return combine(ocrMatches, nameMatches) { ocrDocuments, namedDocuments ->
-            (ocrDocuments + namedDocuments)
-                .distinctBy { it.id }
-                .sortedByDescending { it.updatedAt }
+        val docFlow = queries.searchDocuments(trimmedQuery).asFlow().mapToList(Dispatchers.Default)
+        val pageFlow = queries.selectAllPages().asFlow().mapToList(Dispatchers.Default)
+        return combine(docFlow, pageFlow) { docRows, pageRows ->
+            val pagesByDocId = pageRows.groupBy { it.documentId }
+            docRows.map { it.toDomain(pagesByDocId[it.id].orEmpty()) }
         }
     }
 

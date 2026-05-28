@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.scandoc.domain.result.Outcome
 import com.scandoc.domain.usecase.crop.ApplyFilterUseCase
 import com.scandoc.domain.usecase.crop.ApplyPerspectiveUseCase
+import com.scandoc.domain.usecase.crop.SaveDocumentUseCase
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,6 +18,7 @@ import kotlinx.coroutines.launch
 class CropViewModel(
     private val applyPerspective: ApplyPerspectiveUseCase,
     private val applyFilter: ApplyFilterUseCase,
+    private val saveDocument: SaveDocumentUseCase,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(CropState())
@@ -45,19 +47,29 @@ class CropViewModel(
 
         viewModelScope.launch {
             _state.update { it.copy(isProcessing = true) }
-            val perspective = applyPerspective(current.imageBytes, corners)
-            val processed = when (perspective) {
-                is Outcome.Success -> applyFilter(perspective.value, current.activeFilter)
-                is Outcome.Failure -> perspective
-            }
+            try {
+                val perspectiveResult = applyPerspective(current.imageBytes, corners)
+                val processedResult = when (perspectiveResult) {
+                    is Outcome.Success -> applyFilter(perspectiveResult.value, current.activeFilter)
+                    is Outcome.Failure -> perspectiveResult
+                }
 
-            when (processed) {
-                is Outcome.Success -> _effects.send(CropEffect.NavigateToViewer("draft-scan"))
-                is Outcome.Failure -> _effects.send(
-                    CropEffect.ShowError(processed.error.message ?: "Crop failed"),
-                )
+                when (processedResult) {
+                    is Outcome.Success -> {
+                        when (val saved = saveDocument("Scan", processedResult.value)) {
+                            is Outcome.Success -> _effects.send(CropEffect.NavigateToViewer(saved.value.id))
+                            is Outcome.Failure -> _effects.send(
+                                CropEffect.ShowError(saved.error.message ?: "Save failed"),
+                            )
+                        }
+                    }
+                    is Outcome.Failure -> _effects.send(
+                        CropEffect.ShowError(processedResult.error.message ?: "Crop failed"),
+                    )
+                }
+            } finally {
+                _state.update { it.copy(isProcessing = false) }
             }
-            _state.update { it.copy(isProcessing = false) }
         }
     }
 }

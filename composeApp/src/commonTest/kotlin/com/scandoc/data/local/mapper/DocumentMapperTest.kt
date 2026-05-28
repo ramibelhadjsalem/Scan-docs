@@ -18,7 +18,7 @@ class DocumentMapperTest {
             updatedAt = 2_000,
             pageCount = 1,
             thumbnailPath = "/thumb.jpg",
-            tags = "tax,work",
+            tags = "taxwork",
         )
         val page = PageRow(
             id = "page-1",
@@ -65,8 +65,14 @@ class DocumentMapperTest {
 
     @Test
     fun `should encode and decode tags for storage`() {
-        assertEquals("tax,work", listOf("tax", "work").toStorageTags())
-        assertEquals(listOf("tax", "work"), "tax,work".toDomainTags())
+        assertEquals("taxwork", listOf("tax", "work").toStorageTags())
+        assertEquals(listOf("tax", "work"), "taxwork".toDomainTags())
         assertEquals(emptyList(), "".toDomainTags())
+    }
+
+    @Test
+    fun `should round-trip tags containing commas`() {
+        val tags = listOf("New York, NY", "Q1 2025", "work")
+        assertEquals(tags, tags.toStorageTags().toDomainTags())
     }
 }

@@ -26,16 +26,20 @@ CREATE INDEX IF NOT EXISTS idx_doc_updated ON Document(updatedAt DESC);
 selectAllDocuments:
 SELECT * FROM Document ORDER BY updatedAt DESC;
 
+selectAllPages:
+SELECT * FROM Page ORDER BY documentId, orderIndex;
+
 selectDocumentById:
 SELECT * FROM Document WHERE id = ?;
 
 selectPagesForDocument:
 SELECT * FROM Page WHERE documentId = ? ORDER BY orderIndex;
 
-searchByOcrText:
+searchDocuments:
 SELECT DISTINCT d.* FROM Document d
-INNER JOIN Page p ON p.documentId = d.id
-WHERE p.ocrText LIKE '%' || :query || '%'
+LEFT JOIN Page p ON p.documentId = d.id
+WHERE d.name LIKE '%' || :query || '%'
+   OR p.ocrText LIKE '%' || :query || '%'
 ORDER BY d.updatedAt DESC;
 
 insertDocument:

@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -27,27 +28,15 @@ class LibraryViewModel(
     private val _effects = Channel<LibraryEffect>(Channel.BUFFERED)
     val effects: Flow<LibraryEffect> = _effects.receiveAsFlow()
 
+    private val _query = MutableStateFlow("")
+
     init {
-        onIntent(LibraryIntent.Load)
-    }
-
-    fun onIntent(intent: LibraryIntent) {
-        when (intent) {
-            LibraryIntent.Load -> load()
-            is LibraryIntent.Search -> search(intent.query)
-            is LibraryIntent.OpenDocument -> viewModelScope.launch {
-                _effects.send(LibraryEffect.NavigateToViewer(intent.id))
-            }
-            is LibraryIntent.DeleteDocument -> delete(intent.id)
-            LibraryIntent.StartScan -> viewModelScope.launch {
-                _effects.send(LibraryEffect.NavigateToCamera)
-            }
-        }
-    }
-
-    private fun load() {
         viewModelScope.launch {
-            observeDocuments()
+            _query
+                .flatMapLatest { query ->
+                    if (query.isBlank()) observeDocuments()
+                    else searchDocuments(query)
+                }
                 .catch { _effects.send(LibraryEffect.ShowError(it.message ?: "Unknown error")) }
                 .collect { docs ->
                     _state.update { it.copy(documents = docs, isLoading = false) }
@@ -55,14 +44,20 @@ class LibraryViewModel(
         }
     }
 
-    private fun search(query: String) {
-        _state.update { it.copy(query = query) }
-        viewModelScope.launch {
-            searchDocuments(query)
-                .catch { _effects.send(LibraryEffect.ShowError(it.message ?: "Unknown error")) }
-                .collect { docs ->
-                    _state.update { it.copy(documents = docs) }
-                }
+    fun onIntent(intent: LibraryIntent) {
+        when (intent) {
+            LibraryIntent.Load -> Unit
+            is LibraryIntent.Search -> {
+                _state.update { it.copy(query = intent.query) }
+                _query.value = intent.query
+            }
+            is LibraryIntent.OpenDocument -> viewModelScope.launch {
+                _effects.send(LibraryEffect.NavigateToViewer(intent.id))
+            }
+            is LibraryIntent.DeleteDocument -> delete(intent.id)
+            LibraryIntent.StartScan -> viewModelScope.launch {
+                _effects.send(LibraryEffect.NavigateToCamera)
+            }
         }
     }
 

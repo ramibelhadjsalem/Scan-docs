@@ -1,10 +1,10 @@
 package com.scandoc.core.di
 
 import com.scandoc.core.platform.AppFileSystem
-import com.scandoc.core.platform.PdfExporter
 import com.scandoc.core.platform.PlatformCameraController
 import com.scandoc.core.platform.PlatformImageProcessor
 import com.scandoc.core.platform.PlatformOcrEngine
+import com.scandoc.core.platform.PlatformPdfExporter
 import com.scandoc.data.local.DatabaseFactory
 import com.scandoc.db.ScanDocDatabase
 import com.scandoc.domain.platform.CameraController
@@ -23,5 +23,5 @@ actual val platformModule: Module = module {
     single<CameraController> { PlatformCameraController() }
     single<ImageProcessor> { PlatformImageProcessor() }
     single<OcrEngine> { PlatformOcrEngine() }
-    single<DomainPdfExporter> { PdfExporter() }
+    single<DomainPdfExporter> { PlatformPdfExporter() }
 }

@@ -4,6 +4,7 @@ import com.scandoc.domain.usecase.camera.CaptureFrameUseCase
 import com.scandoc.domain.usecase.camera.DetectEdgesUseCase
 import com.scandoc.domain.usecase.crop.ApplyFilterUseCase
 import com.scandoc.domain.usecase.crop.ApplyPerspectiveUseCase
+import com.scandoc.domain.usecase.crop.SaveDocumentUseCase
 import com.scandoc.domain.usecase.export.ExportImagesUseCase
 import com.scandoc.domain.usecase.export.ExportPdfUseCase
 import com.scandoc.domain.usecase.library.DeleteDocumentUseCase
@@ -18,6 +19,7 @@ val domainModule = module {
     factory { DetectEdgesUseCase(imageProcessor = get()) }
     factory { ApplyPerspectiveUseCase(imageProcessor = get()) }
     factory { ApplyFilterUseCase(imageProcessor = get()) }
+    factory { SaveDocumentUseCase(documentRepository = get(), imageRepository = get()) }
     factory { RunOcrUseCase(ocrEngine = get()) }
     factory { ExportPdfUseCase(pdfExporter = get(), fileSystem = get()) }
     factory { ExportImagesUseCase(fileSystem = get()) }

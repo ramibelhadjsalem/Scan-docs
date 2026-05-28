@@ -51,20 +51,23 @@ class ViewerViewModel(
         val document = _state.value.document ?: return
         viewModelScope.launch {
             _state.update { it.copy(isExporting = true) }
-            when (format) {
-                ExportFormat.Pdf -> {
-                    when (val result = exportPdf(document)) {
-                        is Outcome.Success -> _effects.send(ViewerEffect.ShareFile(result.value))
-                        is Outcome.Failure -> _effects.send(
-                            ViewerEffect.ShowError(result.error.message ?: "Export failed"),
-                        )
+            try {
+                when (format) {
+                    ExportFormat.Pdf -> {
+                        when (val result = exportPdf(document)) {
+                            is Outcome.Success -> _effects.send(ViewerEffect.ShareFile(result.value))
+                            is Outcome.Failure -> _effects.send(
+                                ViewerEffect.ShowError(result.error.message ?: "Export failed"),
+                            )
+                        }
                     }
+                    ExportFormat.JpegImages,
+                    ExportFormat.PngImages,
+                    -> _effects.send(ViewerEffect.ShowError("Image export is not wired yet"))
                 }
-                ExportFormat.JpegImages,
-                ExportFormat.PngImages,
-                -> _effects.send(ViewerEffect.ShowError("Image export is not wired yet"))
+            } finally {
+                _state.update { it.copy(isExporting = false) }
             }
-            _state.update { it.copy(isExporting = false) }
         }
     }
 }

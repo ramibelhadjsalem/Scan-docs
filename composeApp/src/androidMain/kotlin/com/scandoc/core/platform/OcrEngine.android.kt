@@ -12,13 +12,14 @@ import kotlin.coroutines.resumeWithException
 import kotlinx.coroutines.suspendCancellableCoroutine
 
 actual class PlatformOcrEngine actual constructor() : com.scandoc.domain.platform.OcrEngine {
+    private val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+
     actual override suspend fun recognize(imageBytes: ByteArray): OcrResult {
         val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
             ?: error("Unable to decode image for OCR")
         val image = InputImage.fromBitmap(bitmap, 0)
-        val text = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-            .process(image)
-            .await()
+        val text = recognizer.process(image).await()
+        bitmap.recycle()
         return text.toOcrResult()
     }
 
