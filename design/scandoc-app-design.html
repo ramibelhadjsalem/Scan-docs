@@ -1,0 +1,886 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ScanDoc App Design</title>
+  <style>
+    :root {
+      --ink: #0d0e10;
+      --ink-2: #16181c;
+      --ink-3: #1d2025;
+      --line: #2a2d34;
+      --paper: #f7f5f0;
+      --paper-dim: #d4d0c5;
+      --text: #f4f3ee;
+      --text-2: #b8b5ad;
+      --text-3: #7a7870;
+      --signal: #c2f542;
+      --warm: #ff7d4a;
+      --deep: #4a5fd9;
+      --rose: #f5a3b8;
+      --danger: #ff5b6e;
+      --shadow: 0 24px 80px rgba(0, 0, 0, .34);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        linear-gradient(180deg, rgba(29, 32, 37, .94), rgba(13, 14, 16, 1) 52%),
+        radial-gradient(circle at 18% 20%, rgba(194, 245, 66, .11), transparent 34%),
+        radial-gradient(circle at 86% 16%, rgba(255, 125, 74, .12), transparent 30%);
+    }
+
+    button, input { font: inherit; }
+
+    .stage {
+      width: min(1420px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 28px 0 44px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      min-height: 56px;
+      margin-bottom: 22px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand > div:last-child {
+      min-width: 0;
+    }
+
+    .mark {
+      width: 42px;
+      height: 42px;
+      border: 1px solid rgba(244, 243, 238, .12);
+      border-radius: 8px;
+      position: relative;
+      background: var(--signal);
+      box-shadow: 0 10px 34px rgba(194, 245, 66, .18);
+      flex: 0 0 auto;
+    }
+
+    .mark::before {
+      content: "";
+      position: absolute;
+      inset: 9px 11px;
+      border-radius: 3px;
+      background: var(--ink);
+      transform: rotate(-7deg);
+    }
+
+    .mark::after {
+      content: "";
+      position: absolute;
+      width: 13px;
+      height: 2px;
+      left: 14px;
+      top: 20px;
+      background: var(--signal);
+      box-shadow: 0 5px 0 var(--signal);
+      transform: rotate(-7deg);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(26px, 4vw, 54px);
+      line-height: .98;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin: 6px 0 0;
+      color: var(--text-2);
+      line-height: 1.45;
+      max-width: 680px;
+      overflow-wrap: anywhere;
+    }
+
+    .meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text-2);
+      white-space: nowrap;
+      font-size: 14px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 99px;
+      background: var(--signal);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.05fr 1.95fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .panel {
+      border: 1px solid rgba(244, 243, 238, .1);
+      background: rgba(22, 24, 28, .76);
+      box-shadow: var(--shadow);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .splash-panel {
+      min-height: 720px;
+      position: sticky;
+      top: 18px;
+    }
+
+    .screen-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(280px, 1fr));
+      gap: 24px;
+    }
+
+    .phone {
+      width: min(100%, 382px);
+      margin: 0 auto;
+      aspect-ratio: 390 / 844;
+      border-radius: 34px;
+      padding: 12px;
+      background: #07080a;
+      border: 1px solid rgba(244, 243, 238, .13);
+      box-shadow: 0 20px 62px rgba(0, 0, 0, .35);
+    }
+
+    .display {
+      height: 100%;
+      border-radius: 25px;
+      overflow: hidden;
+      position: relative;
+      background: var(--ink);
+      border: 1px solid rgba(244, 243, 238, .08);
+    }
+
+    .status {
+      height: 38px;
+      padding: 12px 18px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: rgba(244, 243, 238, .86);
+      font-size: 12px;
+      font-weight: 700;
+      position: relative;
+      z-index: 5;
+    }
+
+    .status-icons {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 30px;
+      padding: 0 12px;
+      border: 1px solid rgba(244, 243, 238, .11);
+      border-radius: 999px;
+      color: var(--text-2);
+      background: rgba(244, 243, 238, .04);
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .icon-button {
+      width: 42px;
+      height: 42px;
+      display: inline-grid;
+      place-items: center;
+      border: 1px solid rgba(244, 243, 238, .12);
+      border-radius: 999px;
+      color: var(--text);
+      background: rgba(244, 243, 238, .06);
+    }
+
+    .splash {
+      height: calc(100% - 38px);
+      display: grid;
+      grid-template-rows: 1fr auto;
+      padding: 26px;
+      background:
+        linear-gradient(155deg, rgba(13, 14, 16, .92), rgba(29, 32, 37, .92) 47%, rgba(10, 11, 13, 1)),
+        linear-gradient(42deg, rgba(194, 245, 66, .14), rgba(74, 95, 217, .12), rgba(255, 125, 74, .11));
+    }
+
+    .splash-art {
+      align-self: center;
+      justify-self: center;
+      width: min(100%, 265px);
+      height: 342px;
+      position: relative;
+    }
+
+    .scan-beam {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 42%;
+      height: 3px;
+      background: var(--signal);
+      box-shadow: 0 0 28px rgba(194, 245, 66, .55);
+      border-radius: 99px;
+      animation: scan 2.8s ease-in-out infinite;
+      z-index: 3;
+    }
+
+    @keyframes scan {
+      0%, 100% { transform: translateY(-96px); opacity: .52; }
+      50% { transform: translateY(102px); opacity: 1; }
+    }
+
+    .paper-stack {
+      position: absolute;
+      inset: 24px 22px;
+      transform: rotate(-5deg);
+    }
+
+    .paper-sheet {
+      position: absolute;
+      inset: 0;
+      border-radius: 8px;
+      background:
+        linear-gradient(90deg, rgba(13, 14, 16, .06) 1px, transparent 1px) 0 0 / 18px 18px,
+        linear-gradient(180deg, var(--paper), #ece7da);
+      box-shadow: 0 26px 60px rgba(0, 0, 0, .32);
+    }
+
+    .paper-sheet.back {
+      inset: 14px -15px -14px 15px;
+      background: #bfc8eb;
+      transform: rotate(7deg);
+      opacity: .9;
+    }
+
+    .paper-sheet.mid {
+      inset: 6px -7px -7px 7px;
+      background: #ffd0bd;
+      transform: rotate(3deg);
+      opacity: .94;
+    }
+
+    .corner {
+      position: absolute;
+      width: 34px;
+      height: 34px;
+      border-color: var(--signal);
+      border-style: solid;
+      z-index: 4;
+    }
+
+    .corner.tl { top: 6px; left: 2px; border-width: 3px 0 0 3px; }
+    .corner.tr { top: 22px; right: -10px; border-width: 3px 3px 0 0; }
+    .corner.bl { bottom: 14px; left: 12px; border-width: 0 0 3px 3px; }
+    .corner.br { bottom: -3px; right: 8px; border-width: 0 3px 3px 0; }
+
+    .splash-copy h2 {
+      margin: 0;
+      font-size: 43px;
+      line-height: .94;
+      letter-spacing: 0;
+    }
+
+    .splash-copy p {
+      margin: 14px 0 22px;
+      color: var(--text-2);
+      line-height: 1.48;
+    }
+
+    .primary {
+      width: 100%;
+      height: 56px;
+      border: 0;
+      border-radius: 8px;
+      background: var(--signal);
+      color: var(--ink);
+      font-weight: 800;
+    }
+
+    .app-screen {
+      height: calc(100% - 38px);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      min-width: 0;
+    }
+
+    .screen-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .screen-title h2 {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: 0;
+    }
+
+    .screen-title p {
+      margin: 4px 0 0;
+      color: var(--text-2);
+      font-size: 13px;
+    }
+
+    .search {
+      height: 46px;
+      border: 1px solid rgba(244, 243, 238, .1);
+      background: rgba(244, 243, 238, .055);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 14px;
+      color: var(--text-2);
+      font-size: 14px;
+    }
+
+    .doc-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 0;
+    }
+
+    .doc-row {
+      display: grid;
+      grid-template-columns: 52px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 10px;
+      border: 1px solid rgba(244, 243, 238, .09);
+      border-radius: 8px;
+      background: rgba(244, 243, 238, .045);
+    }
+
+    .thumb {
+      width: 52px;
+      height: 66px;
+      border-radius: 5px;
+      background:
+        linear-gradient(180deg, rgba(13, 14, 16, .08), transparent),
+        repeating-linear-gradient(180deg, transparent 0 10px, rgba(13, 14, 16, .15) 10px 12px),
+        var(--paper);
+      box-shadow: inset 0 0 0 1px rgba(13, 14, 16, .08);
+    }
+
+    .doc-name {
+      min-width: 0;
+    }
+
+    .doc-name strong, .result-text strong {
+      display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 14px;
+    }
+
+    .doc-name span, .result-text span {
+      display: block;
+      color: var(--text-2);
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .fab {
+      margin-top: auto;
+      height: 64px;
+      border: 0;
+      border-radius: 999px;
+      background: var(--signal);
+      color: var(--ink);
+      display: grid;
+      grid-template-columns: 52px 1fr 52px;
+      align-items: center;
+      font-weight: 850;
+      box-shadow: 0 14px 34px rgba(194, 245, 66, .22);
+    }
+
+    .camera-screen {
+      padding: 0;
+      background:
+        linear-gradient(180deg, rgba(13, 14, 16, .18), rgba(13, 14, 16, .88)),
+        linear-gradient(118deg, #342f26, #706b5f 42%, #2e3438 100%);
+    }
+
+    .camera-preview {
+      position: absolute;
+      inset: 38px 0 0;
+      background:
+        linear-gradient(90deg, rgba(244, 243, 238, .03) 1px, transparent 1px) 0 0 / 32px 32px,
+        linear-gradient(0deg, rgba(244, 243, 238, .025) 1px, transparent 1px) 0 0 / 32px 32px;
+    }
+
+    .camera-top {
+      position: absolute;
+      top: 52px;
+      left: 18px;
+      right: 18px;
+      display: flex;
+      justify-content: space-between;
+      z-index: 3;
+    }
+
+    .document-target {
+      position: absolute;
+      left: 52px;
+      right: 42px;
+      top: 158px;
+      bottom: 184px;
+      transform: rotate(-4deg);
+      border-radius: 8px;
+      background:
+        repeating-linear-gradient(180deg, rgba(13, 14, 16, .14) 0 2px, transparent 2px 22px),
+        var(--paper);
+      box-shadow: 0 24px 70px rgba(0, 0, 0, .36);
+    }
+
+    .edge {
+      position: absolute;
+      inset: 132px 33px 160px 38px;
+      border: 3px solid var(--signal);
+      transform: rotate(-4deg);
+      border-radius: 10px;
+      box-shadow: 0 0 24px rgba(194, 245, 66, .32);
+    }
+
+    .camera-bottom {
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      bottom: 20px;
+      display: grid;
+      grid-template-columns: 64px 1fr 64px;
+      align-items: center;
+      gap: 14px;
+      z-index: 4;
+    }
+
+    .shutter {
+      width: 82px;
+      height: 82px;
+      border-radius: 999px;
+      border: 7px solid rgba(244, 243, 238, .9);
+      background: var(--signal);
+      box-shadow: inset 0 0 0 5px var(--ink), 0 16px 38px rgba(0, 0, 0, .3);
+      justify-self: center;
+    }
+
+    .crop-canvas {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      place-items: center;
+      padding: 10px 0;
+    }
+
+    .crop-paper {
+      width: 83%;
+      height: 90%;
+      border-radius: 8px;
+      background:
+        linear-gradient(90deg, rgba(13, 14, 16, .08) 1px, transparent 1px) 0 0 / 22px 22px,
+        repeating-linear-gradient(180deg, transparent 0 34px, rgba(13, 14, 16, .12) 34px 36px),
+        #f4efe4;
+      transform: perspective(400px) rotateX(3deg) rotateZ(-2deg);
+      position: relative;
+      box-shadow: 0 18px 50px rgba(0, 0, 0, .28);
+    }
+
+    .crop-outline {
+      position: absolute;
+      inset: 18px 12px 20px 16px;
+      border: 3px solid var(--signal);
+      border-radius: 6px;
+    }
+
+    .handle {
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      position: absolute;
+      background: var(--signal);
+      box-shadow: 0 0 0 5px rgba(194, 245, 66, .16);
+    }
+
+    .h1 { top: 10px; left: 8px; }
+    .h2 { top: 12px; right: 6px; }
+    .h3 { bottom: 10px; right: 8px; }
+    .h4 { bottom: 12px; left: 10px; }
+
+    .filters {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .filter {
+      height: 54px;
+      border: 1px solid rgba(244, 243, 238, .1);
+      border-radius: 8px;
+      background: rgba(244, 243, 238, .045);
+      display: grid;
+      place-items: center;
+      color: var(--text-2);
+      font-size: 11px;
+      font-weight: 750;
+    }
+
+    .filter.active {
+      color: var(--ink);
+      border-color: transparent;
+      background: var(--signal);
+    }
+
+    .viewer-doc {
+      height: 300px;
+      border-radius: 8px;
+      background:
+        repeating-linear-gradient(180deg, transparent 0 18px, rgba(13, 14, 16, .16) 18px 20px),
+        linear-gradient(180deg, var(--paper), #e9e1d4);
+      box-shadow: inset 0 0 0 1px rgba(13, 14, 16, .08), 0 18px 45px rgba(0, 0, 0, .25);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .viewer-doc::before {
+      content: "";
+      position: absolute;
+      inset: 24px 28px auto;
+      height: 52px;
+      background: rgba(74, 95, 217, .2);
+      border-radius: 6px;
+    }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .tab {
+      height: 40px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      background: rgba(244, 243, 238, .05);
+      color: var(--text-2);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .tab.active {
+      background: var(--paper);
+      color: var(--ink);
+    }
+
+    .result-card {
+      border: 1px solid rgba(244, 243, 238, .1);
+      border-radius: 8px;
+      padding: 12px;
+      background: rgba(244, 243, 238, .05);
+      display: grid;
+      grid-template-columns: 38px 1fr;
+      gap: 10px;
+      align-items: start;
+    }
+
+    .confidence {
+      width: 38px;
+      height: 38px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      background: rgba(194, 245, 66, .14);
+      color: var(--signal);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .export-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: auto;
+    }
+
+    .export {
+      height: 54px;
+      border: 1px solid rgba(244, 243, 238, .1);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: rgba(244, 243, 238, .055);
+      color: var(--text);
+      font-weight: 800;
+    }
+
+    .export.primary-action {
+      background: var(--signal);
+      color: var(--ink);
+      border-color: transparent;
+    }
+
+    .caption {
+      padding: 14px 16px 16px;
+      border-top: 1px solid rgba(244, 243, 238, .08);
+      color: var(--text-2);
+      font-size: 13px;
+      line-height: 1.42;
+    }
+
+    .caption strong {
+      color: var(--text);
+    }
+
+    .battery {
+      width: 18px;
+      height: 9px;
+      border-radius: 2px;
+      border: 1px solid currentColor;
+      position: relative;
+    }
+
+    .battery::after {
+      content: "";
+      position: absolute;
+      right: -3px;
+      top: 2px;
+      width: 2px;
+      height: 3px;
+      background: currentColor;
+      border-radius: 0 2px 2px 0;
+    }
+
+    @media (max-width: 1040px) {
+      .layout { grid-template-columns: 1fr; }
+      .splash-panel { position: relative; top: 0; min-height: auto; }
+      .splash-panel .phone { max-width: 382px; }
+    }
+
+    @media (max-width: 720px) {
+      .stage { width: min(100vw - 18px, 420px); padding-top: 16px; }
+      .topbar { align-items: flex-start; flex-direction: column; }
+      .brand { width: 100%; }
+      .meta { white-space: normal; }
+      .screen-grid { grid-template-columns: 1fr; }
+      .phone { width: min(100%, 360px); border-radius: 28px; padding: 9px; }
+      .display { border-radius: 21px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="stage">
+    <header class="topbar">
+      <div class="brand">
+        <div class="mark" aria-hidden="true"></div>
+        <div>
+          <h1>ScanDoc</h1>
+          <p class="subtitle">A focused scanner interface for quick capture, clean crops, readable OCR, and confident PDF export.</p>
+        </div>
+      </div>
+      <div class="meta"><span class="dot"></span><span>Mobile app visual direction</span></div>
+    </header>
+
+    <section class="layout">
+      <article class="panel splash-panel">
+        <div class="phone">
+          <div class="display">
+            <div class="status"><span>9:41</span><span class="status-icons">5G <span class="battery"></span></span></div>
+            <div class="splash">
+              <div class="splash-art" aria-hidden="true">
+                <div class="paper-stack">
+                  <div class="paper-sheet back"></div>
+                  <div class="paper-sheet mid"></div>
+                  <div class="paper-sheet"></div>
+                </div>
+                <div class="scan-beam"></div>
+                <span class="corner tl"></span>
+                <span class="corner tr"></span>
+                <span class="corner bl"></span>
+                <span class="corner br"></span>
+              </div>
+              <div class="splash-copy">
+                <h2>Scan cleaner. Finish faster.</h2>
+                <p>Edge detection, OCR, and export stay one thumb away from the first open.</p>
+                <button class="primary">Start scanning</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="caption"><strong>Splash screen:</strong> high-contrast, instant brand recognition, animated scan beam, and a clear first action.</p>
+      </article>
+
+      <section class="screen-grid" aria-label="ScanDoc screen concepts">
+        <article class="panel">
+          <div class="phone">
+            <div class="display">
+              <div class="status"><span>9:41</span><span class="status-icons">5G <span class="battery"></span></span></div>
+              <div class="app-screen">
+                <div class="screen-head">
+                  <div class="screen-title">
+                    <h2>Library</h2>
+                    <p>12 documents · 44 pages</p>
+                  </div>
+                  <button class="icon-button" aria-label="Sort documents">↕</button>
+                </div>
+                <div class="search">⌕ Search text, title, or OCR</div>
+                <div class="doc-list">
+                  <div class="doc-row">
+                    <div class="thumb"></div>
+                    <div class="doc-name"><strong>Lease Agreement</strong><span>8 pages · OCR ready</span></div>
+                    <span class="pill">PDF</span>
+                  </div>
+                  <div class="doc-row">
+                    <div class="thumb"></div>
+                    <div class="doc-name"><strong>Clinic Receipt</strong><span>2 pages · yesterday</span></div>
+                    <span class="pill">TXT</span>
+                  </div>
+                  <div class="doc-row">
+                    <div class="thumb"></div>
+                    <div class="doc-name"><strong>Project Notes</strong><span>14 pages · synced</span></div>
+                    <span class="pill">OCR</span>
+                  </div>
+                  <div class="doc-row">
+                    <div class="thumb"></div>
+                    <div class="doc-name"><strong>Invoice 0421</strong><span>3 pages · exported</span></div>
+                    <span class="pill">IMG</span>
+                  </div>
+                </div>
+                <button class="fab"><span>＋</span><span>Scan document</span><span>⌁</span></button>
+              </div>
+            </div>
+          </div>
+          <p class="caption"><strong>Library:</strong> dense document rows, OCR-aware search, and a single strong scan action.</p>
+        </article>
+
+        <article class="panel">
+          <div class="phone">
+            <div class="display camera-screen">
+              <div class="status"><span>9:41</span><span class="status-icons">5G <span class="battery"></span></span></div>
+              <div class="camera-preview"></div>
+              <div class="camera-top">
+                <button class="icon-button" aria-label="Close camera">×</button>
+                <span class="pill">Auto capture on</span>
+                <button class="icon-button" aria-label="Flash">⚡</button>
+              </div>
+              <div class="document-target"></div>
+              <div class="edge"></div>
+              <div class="camera-bottom">
+                <button class="icon-button" aria-label="Import image">▧</button>
+                <button class="shutter" aria-label="Capture document"></button>
+                <button class="icon-button" aria-label="Captured pages">3</button>
+              </div>
+            </div>
+          </div>
+          <p class="caption"><strong>Scanner:</strong> the document itself is the UI, with quiet controls and bright edge confidence.</p>
+        </article>
+
+        <article class="panel">
+          <div class="phone">
+            <div class="display">
+              <div class="status"><span>9:41</span><span class="status-icons">5G <span class="battery"></span></span></div>
+              <div class="app-screen">
+                <div class="screen-head">
+                  <button class="icon-button" aria-label="Back">‹</button>
+                  <div class="screen-title">
+                    <h2>Crop</h2>
+                    <p>Page 3 of 3</p>
+                  </div>
+                  <button class="icon-button" aria-label="Confirm crop">✓</button>
+                </div>
+                <div class="crop-canvas">
+                  <div class="crop-paper">
+                    <div class="crop-outline">
+                      <span class="handle h1"></span>
+                      <span class="handle h2"></span>
+                      <span class="handle h3"></span>
+                      <span class="handle h4"></span>
+                    </div>
+                  </div>
+                </div>
+                <div class="filters">
+                  <div class="filter active">Auto</div>
+                  <div class="filter">B&W</div>
+                  <div class="filter">Ink</div>
+                  <div class="filter">Photo</div>
+                  <div class="filter">Gray</div>
+                </div>
+                <button class="primary">Save document</button>
+              </div>
+            </div>
+          </div>
+          <p class="caption"><strong>Crop and filter:</strong> big touch targets, stable filter chips, and a clear save path.</p>
+        </article>
+
+        <article class="panel">
+          <div class="phone">
+            <div class="display">
+              <div class="status"><span>9:41</span><span class="status-icons">5G <span class="battery"></span></span></div>
+              <div class="app-screen">
+                <div class="screen-head">
+                  <button class="icon-button" aria-label="Back">‹</button>
+                  <div class="screen-title">
+                    <h2>Lease Agreement</h2>
+                    <p>8 pages · OCR complete</p>
+                  </div>
+                  <button class="icon-button" aria-label="More actions">⋯</button>
+                </div>
+                <div class="tabs">
+                  <div class="tab">Pages</div>
+                  <div class="tab active">Text</div>
+                  <div class="tab">Export</div>
+                </div>
+                <div class="viewer-doc"></div>
+                <div class="result-card">
+                  <div class="confidence">96</div>
+                  <div class="result-text">
+                    <strong>Monthly rent shall be paid on the first business day...</strong>
+                    <span>Detected from page 2 · tap to copy selected text</span>
+                  </div>
+                </div>
+                <div class="export-row">
+                  <button class="export">TXT</button>
+                  <button class="export primary-action">PDF</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="caption"><strong>Viewer:</strong> pages, text, and export are adjacent so the user never gets lost after scanning.</p>
+        </article>
+      </section>
+    </section>
+  </main>
+</body>
+</html>

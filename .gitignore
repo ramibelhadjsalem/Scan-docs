@@ -76,3 +76,4 @@ test-results/
 
 
 .kotlin/
+.database-mcp/

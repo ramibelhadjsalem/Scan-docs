@@ -4,6 +4,7 @@ import com.scandoc.domain.model.Document
 
 data class LibraryState(
     val documents: List<Document> = emptyList(),
+    val recentDocuments: List<Document> = emptyList(),
     val query: String = "",
     val isLoading: Boolean = true,
     val error: String? = null,

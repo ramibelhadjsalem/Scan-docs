@@ -5,12 +5,19 @@ import com.scandoc.domain.model.Filter
 import com.scandoc.domain.model.Offset
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
+import kotlinx.cinterop.reinterpret
+import kotlinx.cinterop.useContents
 import kotlinx.cinterop.usePinned
+import platform.CoreFoundation.CFDataCreate
 import platform.CoreImage.CIContext
 import platform.CoreImage.CIFilter
 import platform.CoreImage.CIImage
+import platform.CoreImage.createCGImage
 import platform.CoreImage.filterWithName
 import platform.Foundation.NSData
+import platform.Foundation.setValue
+import platform.ImageIO.CGImageSourceCreateImageAtIndex
+import platform.ImageIO.CGImageSourceCreateWithData
 import platform.UIKit.UIImage
 import platform.UIKit.UIImageJPEGRepresentation
 
@@ -74,31 +81,37 @@ actual class PlatformImageProcessor actual constructor() : com.scandoc.domain.pl
 
     private fun ByteArray.toUIImage(): UIImage? {
         if (isEmpty()) return null
-        val nsData: NSData = usePinned { pinned ->
-            NSData(bytes = pinned.addressOf(0), length = size.toULong())
-        }
-        return UIImage(data = nsData)
+        return toCGImage()?.let { UIImage(cGImage = it) }
     }
 
     private fun ByteArray.toCIImage(): CIImage? {
         if (isEmpty()) return null
-        val nsData: NSData = usePinned { pinned ->
-            NSData(bytes = pinned.addressOf(0), length = size.toULong())
-        }
-        return CIImage(data = nsData)
+        return toCGImage()?.let { CIImage(cGImage = it) }
     }
 
     private fun CIImage.toJpegBytes(): ByteArray? {
         val context = CIContext()
         val cgImage = context.createCGImage(this, this.extent) ?: return null
-        val uiImage = UIImage(CGImage = cgImage)
+        val uiImage = UIImage(cGImage = cgImage)
         val nsData = UIImageJPEGRepresentation(uiImage, 0.92) ?: return null
         return nsData.toByteArray()
     }
 
     private fun ciVector(x: Float, y: Double): platform.CoreImage.CIVector =
-        platform.CoreImage.CIVector(x = x.toDouble(), y = y)
+        platform.CoreImage.CIVector(x = x.toDouble(), Y = y)
 }
+
+@OptIn(ExperimentalForeignApi::class)
+private fun ByteArray.toCGImage() =
+    if (isEmpty()) {
+        null
+    } else {
+        val data = usePinned { pinned ->
+            CFDataCreate(null, pinned.addressOf(0).reinterpret(), size.toLong())
+        } ?: return null
+        val source = CGImageSourceCreateWithData(data, null) ?: return null
+        CGImageSourceCreateImageAtIndex(source, 0u, null)
+    }
 
 @OptIn(ExperimentalForeignApi::class)
 private fun NSData.toByteArray(): ByteArray {

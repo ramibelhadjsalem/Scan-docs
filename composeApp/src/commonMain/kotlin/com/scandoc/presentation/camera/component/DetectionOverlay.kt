@@ -5,10 +5,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import com.scandoc.domain.model.DocumentCorners
+import com.scandoc.presentation.theme.ScanDocColors
 
 @Composable
 fun DetectionOverlay(
@@ -25,7 +25,7 @@ fun DetectionOverlay(
         )
         points.zipWithNext().forEach { (start, end) ->
             drawLine(
-                color = Color(0xFFC2F542),
+                color = ScanDocColors.Teal,
                 start = start,
                 end = end,
                 strokeWidth = 4f,
@@ -33,7 +33,7 @@ fun DetectionOverlay(
             )
         }
         drawLine(
-            color = Color(0xFFC2F542),
+            color = ScanDocColors.Teal,
             start = points.last(),
             end = points.first(),
             strokeWidth = 4f,
@@ -41,7 +41,7 @@ fun DetectionOverlay(
         )
         points.forEach { point ->
             drawCircle(
-                color = Color(0xFFC2F542),
+                color = ScanDocColors.Teal,
                 radius = 10f,
                 center = point,
                 style = Stroke(width = 4f),

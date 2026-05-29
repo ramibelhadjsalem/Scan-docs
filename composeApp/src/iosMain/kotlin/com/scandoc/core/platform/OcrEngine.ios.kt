@@ -4,8 +4,12 @@ import com.scandoc.domain.model.OcrBlock
 import com.scandoc.domain.model.OcrResult
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
+import kotlinx.cinterop.reinterpret
+import kotlinx.cinterop.useContents
 import kotlinx.cinterop.usePinned
-import platform.Foundation.NSData
+import platform.CoreFoundation.CFDataCreate
+import platform.ImageIO.CGImageSourceCreateImageAtIndex
+import platform.ImageIO.CGImageSourceCreateWithData
 import platform.Vision.VNImageRequestHandler
 import platform.Vision.VNRecognizeTextRequest
 import platform.Vision.VNRecognizedTextObservation
@@ -21,16 +25,14 @@ actual class PlatformOcrEngine actual constructor() : com.scandoc.domain.platfor
     actual override suspend fun recognize(imageBytes: ByteArray): OcrResult {
         if (imageBytes.isEmpty()) return emptyResult()
 
-        val nsData: NSData = imageBytes.usePinned { pinned ->
-            NSData(bytes = pinned.addressOf(0), length = imageBytes.size.toULong())
-        }
-
-        val handler = VNImageRequestHandler(data = nsData, options = emptyMap<Any?, Any?>())
+        val cgImage = imageBytes.toCGImage() ?: return emptyResult()
+        val handler = VNImageRequestHandler(cGImage = cgImage, options = emptyMap<Any?, Any?>())
         val request = VNRecognizeTextRequest()
         request.recognitionLevel = VNRequestTextRecognitionLevelAccurate
         request.usesLanguageCorrection = true
 
-        runCatching { handler.performRequests(listOf(request), null) }
+        val requestPerformed = handler.performRequests(listOf(request), null)
+        if (!requestPerformed) return emptyResult()
 
         @Suppress("UNCHECKED_CAST")
         val observations = (request.results as? List<VNRecognizedTextObservation>).orEmpty()
@@ -39,14 +41,21 @@ actual class PlatformOcrEngine actual constructor() : com.scandoc.domain.platfor
             @Suppress("UNCHECKED_CAST")
             val candidates = obs.topCandidates(1u) as? List<platform.Vision.VNRecognizedText>
             val top = candidates?.firstOrNull() ?: return@mapNotNull null
-            val box = obs.boundingBox
+            val box = obs.boundingBox.useContents {
+                BoundingBox(
+                    x = origin.x,
+                    y = origin.y,
+                    width = size.width,
+                    height = size.height,
+                )
+            }
             OcrBlock(
                 text = top.string,
                 confidence = top.confidence,
-                left = (box.origin.x * 1000).toInt(),
-                top = ((1.0 - box.origin.y - box.size.height) * 1000).toInt(),
-                right = ((box.origin.x + box.size.width) * 1000).toInt(),
-                bottom = ((1.0 - box.origin.y) * 1000).toInt(),
+                left = (box.x * 1000).toInt(),
+                top = ((1.0 - box.y - box.height) * 1000).toInt(),
+                right = ((box.x + box.width) * 1000).toInt(),
+                bottom = ((1.0 - box.y) * 1000).toInt(),
             )
         }
 
@@ -63,4 +72,22 @@ actual class PlatformOcrEngine actual constructor() : com.scandoc.domain.platfor
     }
 
     private fun emptyResult() = OcrResult(fullText = "", blocks = emptyList(), confidence = 0f, language = null)
+
+    private fun ByteArray.toCGImage() =
+        if (isEmpty()) {
+            null
+        } else {
+            val data = usePinned { pinned ->
+                CFDataCreate(null, pinned.addressOf(0).reinterpret(), size.toLong())
+            } ?: return null
+            val source = CGImageSourceCreateWithData(data, null) ?: return null
+            CGImageSourceCreateImageAtIndex(source, 0u, null)
+        }
+
+    private data class BoundingBox(
+        val x: Double,
+        val y: Double,
+        val width: Double,
+        val height: Double,
+    )
 }
